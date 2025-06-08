@@ -1,4 +1,4 @@
-import { User } from "./user.types";
+import type { User } from "./user.types.ts";
 
 export type Activity = {
   _id: string;

@@ -1,9 +1,8 @@
 import { model, Schema } from "mongoose";
-import { Room as RoomType } from "../types/room.types";
+import type { Room as RoomType } from "../types/room.types.ts";
 
 const messageSchema = new Schema(
   {
-    _id: { type: String, required: true },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
     body: { type: String, required: true },
   },
@@ -11,19 +10,16 @@ const messageSchema = new Schema(
 );
 
 const linkSchema = new Schema({
-  _id: { type: String, required: true },
   name: { type: String, required: true },
   link: { type: String, required: true },
 });
 
 const fileSchema = new Schema({
-  _id: { type: String, required: true },
   name: { type: String, required: true },
   link: { type: String, required: true },
 });
 
 const taskSchema = new Schema({
-  _id: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
   assignedTo: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -36,7 +32,6 @@ const taskSchema = new Schema({
 });
 
 const roomSchema = new Schema<RoomType>({
-  _id: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
   contributors: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],

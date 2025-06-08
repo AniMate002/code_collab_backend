@@ -1,4 +1,4 @@
-import { User } from "./user.types";
+import { User } from "./user.types.ts";
 
 export type NotificationType = "invitation" | "request" | "follow";
 

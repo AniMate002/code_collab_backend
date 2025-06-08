@@ -1,5 +1,5 @@
-import { Activity } from "./activity.types";
-import { Room } from "./room.types";
+import type { Activity } from "./activity.types.ts";
+import type { Room } from "./room.types.ts";
 
 export type Specialization =
   | "Software Engineer"

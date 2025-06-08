@@ -1,5 +1,5 @@
-import { User } from "./user.types";
-import { Activity } from "./activity.types";
+import type { User } from "./user.types.ts";
+import type { Activity } from "./activity.types.ts";
 
 export type RoomType = "public" | "private";
 export type TaskStatus = "not started" | "in progress" | "finished";
