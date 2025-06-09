@@ -2,9 +2,11 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectMongoDB } from "./util/mongodb.ts";
+import cookieParser from "cookie-parser";
 
 // IMPORT ROUTES
 import userRoutes from "./routes/user.route.ts";
+import authRoutes from "./routes/auth.route.ts";
 
 // CONFIGS
 dotenv.config();
@@ -18,9 +20,11 @@ const app = express();
 // MIDDLEWARES
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ROUTES
 app.use("/api/user", userRoutes);
+app.use("/api/auth", authRoutes);
 
 // LISTEN
 app.listen(PORT, () => {

@@ -11,7 +11,8 @@ export type Specialization =
   | "Back End Developer"
   | "Full Stack Developer"
   | "QA Engineer"
-  | "Dev-Ops Engineer";
+  | "Dev-Ops Engineer"
+  | "Guest";
 
 export type User = {
   _id: string;
