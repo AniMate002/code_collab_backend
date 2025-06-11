@@ -1,7 +1,13 @@
 import { model, Schema } from "mongoose";
-import type { Room as RoomType } from "../types/room.types.ts";
+import type {
+  Link,
+  Message,
+  File,
+  Task,
+  Room as RoomType,
+} from "../types/room.types.ts";
 
-const messageSchema = new Schema(
+const messageSchema = new Schema<Message>(
   {
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
     body: { type: String, required: true },
@@ -9,17 +15,17 @@ const messageSchema = new Schema(
   { timestamps: true },
 );
 
-const linkSchema = new Schema({
+const linkSchema = new Schema<Link>({
   name: { type: String, required: true },
   link: { type: String, required: true },
 });
 
-const fileSchema = new Schema({
+const fileSchema = new Schema<File>({
   name: { type: String, required: true },
   link: { type: String, required: true },
 });
 
-const taskSchema = new Schema({
+const taskSchema = new Schema<Task>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   assignedTo: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -34,6 +40,12 @@ const taskSchema = new Schema({
 const roomSchema = new Schema<RoomType>({
   title: { type: String, required: true },
   description: { type: String, required: true },
+  image: {
+    type: String,
+    default:
+      "https://linda-hoang.com/wp-content/uploads/2014/10/img-placeholder-dark.jpg",
+  },
+  topic: { type: String, default: "General" },
   contributors: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
   activities: [{ type: Schema.Types.ObjectId, ref: "Activity", default: [] }],
   type: { type: String, default: "public", enum: ["public", "private"] },

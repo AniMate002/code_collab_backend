@@ -5,13 +5,8 @@ export type RoomType = "public" | "private";
 export type TaskStatus = "not started" | "in progress" | "finished";
 
 export type Message = {
-  _id: string;
   sender: User;
   body: string;
-  timestamp: {
-    createdAt: Date;
-    updatedAt: Date;
-  };
 };
 
 export type Link = {
@@ -39,6 +34,8 @@ export type Room = {
   _id: string;
   title: string;
   description: string;
+  image: string;
+  topic: string;
   contributors: Array<User>;
   activities: Array<Activity>;
   type: RoomType;

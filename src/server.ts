@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 // IMPORT ROUTES
 import userRoutes from "./routes/user.route.ts";
 import authRoutes from "./routes/auth.route.ts";
+import roomRoutes from "./routes/room.route.ts";
 
 // CONFIGS
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(cookieParser());
 // ROUTES
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/room", roomRoutes);
 
 // LISTEN
 app.listen(PORT, () => {
