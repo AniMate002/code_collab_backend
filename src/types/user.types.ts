@@ -21,7 +21,7 @@ export type User = {
   password: string;
   specialization: Specialization;
   skills: string[];
-  projects: Array<Room>;
+  rooms: Array<Room>;
   activities: Array<Activity>;
   following: Array<User>;
   followers: Array<User>;

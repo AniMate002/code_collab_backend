@@ -1,9 +1,24 @@
 import type { User } from "./user.types.ts";
+import type { Room } from "./room.types.ts";
+
+export const ActivityTitleType = {
+  createFile: "Created file",
+  createLink: "Created link",
+  createRoom: "Created room",
+  deleteLink: "Deleted link",
+  sendInvite: "Sent invite",
+  acceptInvite: "Accepted invite",
+  rejectInvite: "Rejected invite",
+  leaveRoom: "Left room",
+  joinRoom: "Joined room",
+  createTask: "Created task",
+  updateTaskStatus: "Updated task status",
+} as const;
+
+export type ActivityTitleType = keyof typeof ActivityTitleType;
 
 export type Activity = {
-  _id: string;
-  title: string;
+  title: ActivityTitleType;
   user: User;
-  createdAt: Date;
-  updatedAt: Date;
+  room: Room;
 };

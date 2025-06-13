@@ -7,6 +7,15 @@ import {
   deleteRoomController,
   sendMessageController,
   getMessagesByRoomIdController,
+  createLinkController,
+  getLinksByRoomIdController,
+  deleteLinkController,
+  getActivitiesByRoomIdController,
+  createTaskController,
+  getTasksByRoomIdController,
+  updateTaskStatusController,
+  getContributorsByRoomIdController,
+  joinLeaveRoomController,
 } from "../controllers/room.controller.ts";
 
 const router = Router();
@@ -14,26 +23,30 @@ const router = Router();
 router.get("/", getAllRoomsController);
 router.get("/:id", getSingleRoomByIdController);
 
-// tabs get
+// get
 router.get("/:id/message", getMessagesByRoomIdController);
 // router.get("/:id/files", getFilesByRoomIdController);
-// router.get("/:id/links", getLinksByRoomIdController);
-// router.get("/:id/activities", getActivitiesByRoomIdController);
-// router.get("/:id/contributors", getContributorsByRoomIdController);
-// router.get("/:id/tasks", getTasksByRoomIdController);
+router.get("/:id/link", getLinksByRoomIdController);
+router.get("/:id/activity", getActivitiesByRoomIdController);
+router.get("/:id/task", getTasksByRoomIdController);
+router.get("/:id/contributor", getContributorsByRoomIdController);
 // router.get("/filter", getFilteredRoomsController)
 
 // post
 router.post("/", checkAuth, createRoomController);
 router.post("/:id/message", checkAuth, sendMessageController);
 // router.post("/:id/file", checkAuth, uploadFileController);
-// router.post("/:id/link", checkAuth, createLinkController);
-// router.post("/:id/activity", checkAuth, createActivityController);
-// router.post("/:id/task", checkAuth, createTaskController);
-// router.post("/:id/contributor", checkAuth, addContributorController);
-// router.post("/:id/join", checkAuth, joinLeaveRoomController);
+router.post("/:id/link", checkAuth, createLinkController);
+// router.post("/:id/activity", checkAuth, createActivityController); TODO: remove it because activities are created automatically on each route
+router.post("/:id/task", checkAuth, createTaskController);
+// router.post("/:id/contributor", checkAuth, addContributorController); TODO: change to sendInvite and place to notifications route
+router.post("/:id/join", checkAuth, joinLeaveRoomController);
 
 // delete
 router.delete("/:id", checkAuth, deleteRoomController);
+router.delete("/:id/link", checkAuth, deleteLinkController);
+
+// patch
+router.patch("/:id/task", checkAuth, updateTaskStatusController);
 
 export default router;

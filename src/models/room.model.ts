@@ -29,7 +29,7 @@ const taskSchema = new Schema<Task>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   assignedTo: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  deadline: { type: Date, required: true },
+  deadline: { type: Date },
   status: {
     type: String,
     enum: ["not started", "in progress", "finished"],
@@ -47,7 +47,6 @@ const roomSchema = new Schema<RoomType>({
   },
   topic: { type: String, default: "General" },
   contributors: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
-  activities: [{ type: Schema.Types.ObjectId, ref: "Activity", default: [] }],
   type: { type: String, default: "public", enum: ["public", "private"] },
   messages: [{ type: messageSchema, default: [] }],
   links: { type: [linkSchema], default: [] },

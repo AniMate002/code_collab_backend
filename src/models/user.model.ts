@@ -23,7 +23,7 @@ const userSchema = new Schema<UserType>({
     default: "Guest",
   },
   skills: [{ type: "String", default: [] }],
-  projects: [{ type: Schema.Types.ObjectId, ref: "Room", default: [] }],
+  rooms: [{ type: Schema.Types.ObjectId, ref: "Room", default: [] }],
   activities: [{ type: Schema.Types.ObjectId, ref: "Activity", default: [] }],
   following: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   followers: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],

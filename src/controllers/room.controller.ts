@@ -1,6 +1,9 @@
 import type { Request, Response } from "express";
 import { Room } from "../models/room.model.ts";
-import type { Message } from "../types/room.types.ts";
+import type { Link, Message, Task } from "../types/room.types.ts";
+import { ActivityTitleType } from "../types/activity.types.ts";
+import { Activity } from "../models/activity.model.ts";
+import { User } from "../models/user.model.ts";
 
 export const createRoomController = async (
   req: Request,
@@ -28,7 +31,14 @@ export const createRoomController = async (
       type,
       contributors: [user._id],
     });
-    await room.save();
+
+    const activity = new Activity({
+      title: ActivityTitleType.createRoom,
+      user: user._id,
+      room: room._id,
+    });
+
+    await Promise.all([room.save(), activity.save()]);
     res.status(201).json(room);
   } catch (error) {
     console.log(error);
@@ -57,7 +67,13 @@ export const getSingleRoomByIdController = async (
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
 
-    const room = await Room.findById(id);
+    const room = await Room.findById(id).select([
+      "title",
+      "description",
+      "image",
+      "topic",
+      "type",
+    ]);
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     res.status(200).json(room);
@@ -127,6 +143,280 @@ export const getMessagesByRoomIdController = async (
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     return res.status(200).json(room.messages);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+// LINKS
+export const createLinkController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { name, link } = req.body;
+    const { id } = req.params;
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!name || !link)
+      return res.status(400).json({ message: "Missing properties" });
+
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    if (!link.startsWith("https://"))
+      return res.status(400).json({ message: "Invalid link format" });
+
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const linkObject: Link = { name, link };
+
+    const activity = new Activity({
+      title: ActivityTitleType.createLink,
+      user: user._id,
+      room: room._id,
+    });
+
+    await Promise.all([
+      room.updateOne({ $push: { links: linkObject } }),
+      activity.save(),
+    ]);
+    res.status(201).json(linkObject);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getLinksByRoomIdController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const room = await Room.findById(id).select("links");
+    if (!room) return res.status(404).json({ message: "Room not found" });
+    return res.status(200).json(room.links);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const deleteLinkController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { linkId } = req.body;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const activity = new Activity({
+      title: ActivityTitleType.deleteLink,
+      user: user._id,
+      room: room._id,
+    });
+
+    await Promise.all([
+      room.updateOne({ $pull: { links: { _id: linkId } } }),
+      activity.save(),
+    ]);
+    res.status(200).json({ message: "Link deleted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+//ACTIVITIES
+
+export const getActivitiesByRoomIdController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+    const activities = await Activity.find({ room: id });
+    return res.status(200).json(activities);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+//TASKS
+export const createTaskController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { title, description, assignedTo, deadline } = req.body;
+    if (!title) return res.status(400).json({ message: "Title is required" });
+
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const assignedToUser = await User.findById(assignedTo);
+    if (!assignedToUser)
+      return res.status(404).json({ message: "Assignee not found" });
+
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const activity = new Activity({
+      title: ActivityTitleType.createTask,
+      user: user._id,
+      room: room._id,
+    });
+
+    const task: Task = {
+      title,
+      description,
+      assignedTo,
+      deadline,
+    };
+
+    await Promise.all([
+      room.updateOne({ $push: { tasks: task } }),
+      activity.save(),
+    ]);
+    return res.status(201).json(task);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getTasksByRoomIdController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    const room = await Room.findById(id).select("tasks");
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    return res.status(200).json(room.tasks);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const updateTaskStatusController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    const user = req.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const { taskId, status } = req.body;
+    if (!taskId || !status)
+      return res.status(400).json({ message: "Missing properties" });
+
+    const task = room.tasks.find(
+      (task) => (task._id || "").toString() === taskId.toString(),
+    );
+    if (!task) return res.status(404).json({ message: "Task not found" });
+
+    const activity = new Activity({
+      title: ActivityTitleType.updateTaskStatus,
+      user: user._id,
+      room: room._id,
+    });
+
+    task.status = status;
+    room.markModified("tasks");
+
+    await Promise.all([room.save(), activity.save()]);
+    return res.status(200).json(task);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+// CONTRIBUTORS
+export const getContributorsByRoomIdController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    const room = await Room.findById(id)
+      .select("contributors")
+      .populate("contributors");
+
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    return res.status(200).json(room.contributors);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const joinLeaveRoomController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    if (!req?.user) return res.status(401).json({ message: "Unauthorized" });
+    const userId = req.user._id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const room = await Room.findById(id).select("contributors");
+
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const joined = !room.contributors.includes(userId.toString());
+    const activity = new Activity({
+      title: joined ? ActivityTitleType.joinRoom : ActivityTitleType.leaveRoom,
+      user: user._id,
+      room: room._id,
+    });
+
+    await Promise.all([
+      room.updateOne({
+        [joined ? "$push" : "$pull"]: { contributors: userId },
+      }),
+      user.updateOne({ [joined ? "$push" : "$pull"]: { rooms: id } }),
+      activity.save(),
+    ]);
+
+    const updatedRoom = await Room.findById(id).select("contributors");
+    return res.status(200).json(updatedRoom?.contributors);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
