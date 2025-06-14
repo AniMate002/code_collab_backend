@@ -16,7 +16,7 @@ export const getSingleUserByIdController = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate("rooms");
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user);
   } catch (error) {
@@ -88,7 +88,7 @@ export const followUnfollowUserController = async (
   res: Response,
 ): Promise<any> => {
   try {
-    //   TODO: make follow/unfollow logic adding authorization
+    //   TODO: make follow/unfollow logic after adding authorization
     res.status(200).json({ message: "Follow/Unfollow user" });
   } catch (error) {
     console.log(error);

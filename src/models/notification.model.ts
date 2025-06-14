@@ -2,14 +2,14 @@ import { model, Schema } from "mongoose";
 import type { Notification as NotificationType } from "../types/notification.types.ts";
 
 const notificationSchema = new Schema<NotificationType>({
-  title: { type: String, required: true },
-  body: { type: String, required: true },
-  user: { type: Schema.Types.ObjectId, ref: "User" },
+  from: { type: Schema.Types.ObjectId, ref: "User" },
+  to: { type: Schema.Types.ObjectId, ref: "User" },
   type: {
     type: String,
     required: true,
-    enum: ["invitation", "request", "follow"],
+    enum: ["invitation", "requestAccepted", "requestRejected", "follow"],
   },
+  room: { type: Schema.Types.ObjectId, ref: "Room" },
   isAccepted: { type: Boolean, default: false },
   isRead: { type: Boolean, default: false },
 });

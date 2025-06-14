@@ -5,17 +5,22 @@ import { ActivityTitleType } from "../types/activity.types.ts";
 import { Activity } from "../models/activity.model.ts";
 import { User } from "../models/user.model.ts";
 
+// ROOMS
+
 export const createRoomController = async (
   req: Request,
   res: Response,
 ): Promise<any> => {
   try {
     const { title, description, image, topic, type } = req.body;
-    if (!title || !description || !topic || !type)
+    if (!title || !description)
       return res.status(400).json({ message: "Missing properties" });
 
     const user = req?.user;
     if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+    const me = await User.findById(user._id);
+    if (!me) return res.status(404).json({ message: "User not found" });
 
     const foundRoom = await Room.findOne({ title });
     if (foundRoom)
@@ -38,7 +43,11 @@ export const createRoomController = async (
       room: room._id,
     });
 
-    await Promise.all([room.save(), activity.save()]);
+    await Promise.all([
+      room.save(),
+      activity.save(),
+      user.updateOne({ $push: { rooms: room._id } }),
+    ]);
     res.status(201).json(room);
   } catch (error) {
     console.log(error);
@@ -51,7 +60,13 @@ export const getAllRoomsController = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const rooms = await Room.find();
+    const rooms = await Room.find().select([
+      "title",
+      "description",
+      "image",
+      "topic",
+      "type",
+    ]);
     res.status(200).json(rooms);
   } catch (error) {
     console.log(error);
@@ -77,6 +92,27 @@ export const getSingleRoomByIdController = async (
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     res.status(200).json(room);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getFilteredRoomsController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { topic } = req.query;
+    const rooms = await Room.find({ topic }).select([
+      "title",
+      "description",
+      "image",
+      "topic",
+      "type",
+    ]);
+
+    return res.status(200).json(rooms);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

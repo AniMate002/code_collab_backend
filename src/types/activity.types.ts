@@ -13,6 +13,8 @@ export const ActivityTitleType = {
   joinRoom: "Joined room",
   createTask: "Created task",
   updateTaskStatus: "Updated task status",
+  requestRoom: "Requested access to this room",
+  requestRejected: "Request rejected",
 } as const;
 
 export type ActivityTitleType = keyof typeof ActivityTitleType;
