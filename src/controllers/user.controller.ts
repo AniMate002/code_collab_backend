@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { User } from "../models/user.model.ts";
+import { Notification } from "../models/notification.model.ts";
 
 export const getAllUsersController = async (req: Request, res: Response) => {
   try {
@@ -88,8 +89,61 @@ export const followUnfollowUserController = async (
   res: Response,
 ): Promise<any> => {
   try {
-    //   TODO: make follow/unfollow logic after adding authorization
-    res.status(200).json({ message: "Follow/Unfollow user" });
+    const authUser = req.user;
+    const { id } = req.params;
+    if (!authUser) return res.status(401).json({ message: "Unauthorized" });
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (
+      user.followers.some(
+        (user) => user._id.toString() === authUser._id.toString(),
+      )
+    ) {
+      await Promise.all([
+        user.updateOne({ $pull: { followers: authUser._id } }),
+        User.findByIdAndUpdate(authUser._id, {
+          $pull: { following: user._id },
+        }),
+      ]);
+      res.status(200).json({ message: "User unfollowed" });
+    } else {
+      const notification = new Notification({
+        to: user._id,
+        from: authUser._id,
+        room: null,
+        type: "follow",
+        isAccepted: false,
+        isRead: false,
+      });
+      await Promise.all([
+        user.updateOne({ $push: { followers: authUser._id } }),
+        User.findByIdAndUpdate(authUser._id, {
+          $push: { following: user._id },
+        }),
+        notification.save(),
+      ]);
+      res.status(200).json({ message: "User followed" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getUserFollowersController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const user = await User.findById(id)
+      .select("followers")
+      .populate("followers");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user.followers);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

@@ -40,7 +40,6 @@ router.post("/:id/message", checkAuth, sendMessageController);
 // router.post("/:id/file", checkAuth, uploadFileController);
 router.post("/:id/link", checkAuth, createLinkController);
 router.post("/:id/task", checkAuth, createTaskController);
-// router.post("/:id/contributor", checkAuth, addContributorController); TODO: change to sendInvite and place to notifications route
 router.post("/:id/join", checkAuth, joinLeaveRoomController);
 
 // delete

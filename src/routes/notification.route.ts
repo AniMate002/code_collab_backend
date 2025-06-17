@@ -18,7 +18,6 @@ router.get("/", checkAuth, getAllNotificationsController);
 // POST
 router.post("/sendInvitation", checkAuth, sendInvitationController);
 router.post("/sendRequest", checkAuth, sendRequestController);
-// router.post("/sendFollow", checkAuth, sendFollowController); TODO: place it inside follow/unfollow user controller
 
 // PUT
 router.put("/:id/acceptInvitation", checkAuth, acceptInvitationController);
