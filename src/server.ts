@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectMongoDB } from "./util/mongodb.ts";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 // IMPORT ROUTES
 import userRoutes from "./routes/user.route.ts";
@@ -23,6 +24,13 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.ORIGIN,
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  }),
+);
 
 // ROUTES
 app.use("/api/user", userRoutes);
