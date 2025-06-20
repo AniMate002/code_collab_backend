@@ -175,7 +175,9 @@ export const getMessagesByRoomIdController = async (
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
 
-    const room = await Room.findById(id).select("messages");
+    const room = await Room.findById(id)
+      .select("messages")
+      .populate("messages.sender");
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     return res.status(200).json(room.messages);
@@ -345,7 +347,9 @@ export const getTasksByRoomIdController = async (
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
 
-    const room = await Room.findById(id).select("tasks");
+    const room = await Room.findById(id)
+      .select("tasks")
+      .populate("tasks.assignedTo");
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     return res.status(200).json(room.tasks);
