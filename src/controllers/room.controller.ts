@@ -61,6 +61,7 @@ export const getAllRoomsController = async (
 ): Promise<any> => {
   try {
     const rooms = await Room.find().select([
+      "_id",
       "title",
       "description",
       "image",
@@ -83,6 +84,7 @@ export const getSingleRoomByIdController = async (
     if (!id) return res.status(400).json({ message: "Invalid id" });
 
     const room = await Room.findById(id).select([
+      "_id",
       "title",
       "description",
       "image",
@@ -104,7 +106,9 @@ export const getFilteredRoomsController = async (
 ): Promise<any> => {
   try {
     const { topic } = req.query;
-    const rooms = await Room.find({ topic }).select([
+    const query = topic ? { topic } : {};
+    const rooms = await Room.find(query).select([
+      "_id",
       "title",
       "description",
       "image",
@@ -452,11 +456,28 @@ export const joinLeaveRoomController = async (
         [joined ? "$push" : "$pull"]: { contributors: userId },
       }),
       user.updateOne({ [joined ? "$push" : "$pull"]: { rooms: id } }),
+      user.updateOne({ $push: { activities: activity._id } }),
       activity.save(),
     ]);
 
     const updatedRoom = await Room.findById(id).select("contributors");
     return res.status(200).json(updatedRoom?.contributors);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getRecentRoomsController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const rooms = await Room.find()
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .select(["_id", "title", "description", "image", "topic", "type"]);
+    res.status(200).json(rooms);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

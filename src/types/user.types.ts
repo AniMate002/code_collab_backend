@@ -18,7 +18,9 @@ export type User = {
   _id: string;
   name: string;
   email: string;
+  about: string;
   password: string;
+  avatar: string;
   specialization: Specialization;
   skills: string[];
   rooms: Array<Room>;

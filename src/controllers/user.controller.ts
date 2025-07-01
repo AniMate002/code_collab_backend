@@ -61,7 +61,8 @@ export const filterUsersController = async (
 ): Promise<any> => {
   try {
     const { specialization } = req.query;
-    const users = await User.find({ specialization });
+    const query = specialization ? { specialization } : {};
+    const users = await User.find(query);
     res.status(200).json(users);
   } catch (error) {
     console.log(error);
@@ -144,6 +145,83 @@ export const getUserFollowersController = async (
       .populate("followers");
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user.followers);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getUserFollowingController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const user = await User.findById(id)
+      .select("following")
+      .populate("following");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user.following);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getUserRoomsController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const user = await User.findById(id).select("rooms").populate("rooms");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user.rooms);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getUserActivityController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const user = await User.findById(id)
+      .select("activities")
+      .populate("activities");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.status(200).json(user.activities);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getFeaturedUsersController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const users = await User.aggregate([
+      {
+        $addFields: {
+          followersCount: { $size: "$followers" },
+        },
+      },
+      {
+        $sort: { followersCount: -1 },
+      },
+      {
+        $limit: 4,
+      },
+    ]);
+    res.status(200).json(users);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

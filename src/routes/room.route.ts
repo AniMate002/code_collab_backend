@@ -17,11 +17,13 @@ import {
   getContributorsByRoomIdController,
   joinLeaveRoomController,
   getFilteredRoomsController,
+  getRecentRoomsController,
 } from "../controllers/room.controller.ts";
 
 const router = Router();
 
 router.get("/", getAllRoomsController);
+router.get("/recent", getRecentRoomsController);
 router.get("/filter", getFilteredRoomsController);
 
 router.get("/:id", getSingleRoomByIdController);

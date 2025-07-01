@@ -37,21 +37,38 @@ const taskSchema = new Schema<Task>({
   },
 });
 
-const roomSchema = new Schema<RoomType>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  image: {
-    type: String,
-    default:
-      "https://linda-hoang.com/wp-content/uploads/2014/10/img-placeholder-dark.jpg",
+const roomSchema = new Schema<RoomType>(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    image: {
+      type: String,
+      default:
+        "https://linda-hoang.com/wp-content/uploads/2014/10/img-placeholder-dark.jpg",
+    },
+    topic: {
+      type: String,
+      default: "General",
+      enum: [
+        "Design",
+        "Technology",
+        "Gaming",
+        "Education",
+        "IT",
+        "General",
+        "Business",
+      ],
+    },
+    contributors: [
+      { type: Schema.Types.ObjectId, ref: "User", required: true },
+    ],
+    type: { type: String, default: "public", enum: ["public", "private"] },
+    messages: [{ type: messageSchema, default: [] }],
+    links: { type: [linkSchema], default: [] },
+    files: { type: [fileSchema], default: [] },
+    tasks: { type: [taskSchema], default: [] },
   },
-  topic: { type: String, default: "General" },
-  contributors: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
-  type: { type: String, default: "public", enum: ["public", "private"] },
-  messages: [{ type: messageSchema, default: [] }],
-  links: { type: [linkSchema], default: [] },
-  files: { type: [fileSchema], default: [] },
-  tasks: { type: [taskSchema], default: [] },
-});
+  { timestamps: true },
+);
 
 export const Room = model("Room", roomSchema);

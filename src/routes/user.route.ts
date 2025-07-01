@@ -8,6 +8,10 @@ import {
   deleteUserController,
   followUnfollowUserController,
   getUserFollowersController,
+  getUserFollowingController,
+  getUserRoomsController,
+  getUserActivityController,
+  getFeaturedUsersController,
 } from "../controllers/user.controller.ts";
 import { checkAuth } from "../middleware/auth.middleware.ts";
 
@@ -15,8 +19,12 @@ const router = Router();
 // GET
 router.get("/", getAllUsersController);
 router.get("/filter", filterUsersController);
+router.get("/featured", getFeaturedUsersController);
 router.get("/:id", getSingleUserByIdController);
 router.get("/:id/followers", getUserFollowersController);
+router.get("/:id/following", getUserFollowingController);
+router.get("/:id/rooms", getUserRoomsController);
+router.get("/:id/activity", getUserActivityController);
 // POST
 router.post("/", createUserController);
 // PUT
