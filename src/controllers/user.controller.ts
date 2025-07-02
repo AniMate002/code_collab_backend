@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { User } from "../models/user.model.ts";
 import { Notification } from "../models/notification.model.ts";
+import { v2 as cloudinary } from "cloudinary";
 
 export const getAllUsersController = async (req: Request, res: Response) => {
   try {
@@ -41,12 +42,36 @@ export const updateUserController = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const { name, email, specialization } = req.body;
+    const { name, email, specialization, about, skills } = req.body;
+    let { avatar } = req.body;
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (email !== user.email) {
+      const userWithThisEmail = await User.findOne({ email });
+      if (userWithThisEmail)
+        return res
+          .status(400)
+          .json({ message: "User with this email already exists" });
+    }
     user.name = name || user.name;
     user.email = email || user.email;
     user.specialization = specialization || user.specialization;
+    user.skills = skills || user.skills;
+    user.about = about || user.about;
+
+    if (avatar && avatar !== user.avatar) {
+      const res = await cloudinary.uploader.upload(avatar, {
+        folder: "users",
+        width: 1200,
+        // height: 1200,
+        crop: "limit",
+        quality: "auto",
+        fetch_format: "auto",
+      });
+      avatar = res.secure_url;
+      user.avatar = avatar;
+    }
     await user.save();
     res.status(200).json(user);
   } catch (error) {

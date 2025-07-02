@@ -10,9 +10,11 @@ import userRoutes from "./routes/user.route.ts";
 import authRoutes from "./routes/auth.route.ts";
 import roomRoutes from "./routes/room.route.ts";
 import notificationRoutes from "./routes/notification.route.ts";
+import { configCloudinary } from "./util/cloudinary.ts";
 
 // CONFIGS
 dotenv.config();
+configCloudinary();
 
 // CONST
 const PORT = process.env.PORT || 3000;
@@ -21,8 +23,8 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 // MIDDLEWARES
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 app.use(
   cors({
