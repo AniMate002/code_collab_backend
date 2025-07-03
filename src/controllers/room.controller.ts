@@ -4,6 +4,7 @@ import type { Link, Message, Task } from "../types/room.types.ts";
 import { ActivityTitleType } from "../types/activity.types.ts";
 import { Activity } from "../models/activity.model.ts";
 import { User } from "../models/user.model.ts";
+import { v2 as cloudinary } from "cloudinary";
 
 // ROOMS
 
@@ -12,7 +13,8 @@ export const createRoomController = async (
   res: Response,
 ): Promise<any> => {
   try {
-    const { title, description, image, topic, type } = req.body;
+    const { title, description, topic, type } = req.body;
+    let { image } = req.body;
     if (!title || !description)
       return res.status(400).json({ message: "Missing properties" });
 
@@ -27,6 +29,18 @@ export const createRoomController = async (
       return res
         .status(400)
         .json({ message: "Room with this name already exists" });
+
+    if (image) {
+      const res = await cloudinary.uploader.upload(image, {
+        folder: "rooms",
+        width: 1200,
+        // height: 1200,
+        crop: "limit",
+        quality: "auto",
+        fetch_format: "auto",
+      });
+      image = res.secure_url;
+    }
 
     const room = new Room({
       title,
