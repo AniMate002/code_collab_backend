@@ -104,6 +104,7 @@ export const getSingleRoomByIdController = async (
       "image",
       "topic",
       "type",
+      "contributors",
     ]);
     if (!room) return res.status(404).json({ message: "Room not found" });
 
