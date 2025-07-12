@@ -167,7 +167,7 @@ export const getUserFollowersController = async (
     if (!id) return res.status(400).json({ message: "Invalid id" });
     const user = await User.findById(id)
       .select("followers")
-      .populate("followers");
+      .populate({ path: "followers", select: "_id name avatar" });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user.followers);
   } catch (error) {
@@ -185,7 +185,7 @@ export const getUserFollowingController = async (
     if (!id) return res.status(400).json({ message: "Invalid id" });
     const user = await User.findById(id)
       .select("following")
-      .populate("following");
+      .populate({ path: "following", select: "_id name avatar" });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user.following);
   } catch (error) {
@@ -201,7 +201,9 @@ export const getUserRoomsController = async (
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
-    const user = await User.findById(id).select("rooms").populate("rooms");
+    const user = await User.findById(id)
+      .select("rooms")
+      .populate({ path: "rooms", select: "_id title description image topic" });
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user.rooms);
   } catch (error) {

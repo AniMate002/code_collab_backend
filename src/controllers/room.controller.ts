@@ -194,9 +194,10 @@ export const getMessagesByRoomIdController = async (
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
 
-    const room = await Room.findById(id)
-      .select("messages")
-      .populate("messages.sender");
+    const room = await Room.findById(id).select("messages").populate({
+      path: "messages.sender",
+      select: "name avatar _id",
+    });
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     return res.status(200).json(room.messages);
