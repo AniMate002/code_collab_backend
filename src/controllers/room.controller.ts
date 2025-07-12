@@ -499,3 +499,61 @@ export const getRecentRoomsController = async (
     res.status(500).json(error);
   }
 };
+
+export const uploadFileController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!req?.user) return res.status(401).json({ message: "Unauthorized" });
+    let { file } = req.body;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    if (!file) return res.status(400).json({ message: "No file provided" });
+
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    const fileRes = await cloudinary.uploader.upload(file, {
+      folder: "files",
+      width: 1200,
+      crop: "limit",
+      quality: "auto",
+      fetch_format: "auto",
+    });
+    file = fileRes.secure_url;
+
+    // TODO: Create room activity for uploading file
+
+    await room.updateOne({
+      $push: { files: { sender: req.user._id, link: file } },
+    });
+    res.status(200).json(file);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const getFilesByRoomIdController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+
+    const room = await Room.findById(id).select("files").populate({
+      path: "files.sender",
+      select: "name avatar _id",
+    });
+
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    return res.status(200).json(room.files);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};

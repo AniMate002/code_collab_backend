@@ -14,7 +14,7 @@ export type Link = {
 };
 
 export type File = {
-  name: string;
+  sender: User;
   link: string;
 };
 

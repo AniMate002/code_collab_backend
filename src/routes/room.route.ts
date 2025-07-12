@@ -18,6 +18,8 @@ import {
   joinLeaveRoomController,
   getFilteredRoomsController,
   getRecentRoomsController,
+  uploadFileController,
+  getFilesByRoomIdController,
 } from "../controllers/room.controller.ts";
 
 const router = Router();
@@ -30,7 +32,7 @@ router.get("/:id", getSingleRoomByIdController);
 
 // get
 router.get("/:id/message", getMessagesByRoomIdController);
-// router.get("/:id/files", getFilesByRoomIdController); TODO:  add upload files functionality
+router.get("/:id/file", getFilesByRoomIdController);
 router.get("/:id/link", getLinksByRoomIdController);
 router.get("/:id/activity", getActivitiesByRoomIdController);
 router.get("/:id/task", getTasksByRoomIdController);
@@ -39,7 +41,7 @@ router.get("/:id/contributor", getContributorsByRoomIdController);
 // post
 router.post("/", checkAuth, createRoomController);
 router.post("/:id/message", checkAuth, sendMessageController);
-// router.post("/:id/file", checkAuth, uploadFileController);
+router.post("/:id/file", checkAuth, uploadFileController);
 router.post("/:id/link", checkAuth, createLinkController);
 router.post("/:id/task", checkAuth, createTaskController);
 router.post("/:id/join", checkAuth, joinLeaveRoomController);

@@ -21,7 +21,7 @@ const linkSchema = new Schema<Link>({
 });
 
 const fileSchema = new Schema<File>({
-  name: { type: String, required: true },
+  sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
   link: { type: String, required: true },
 });
 
