@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { User } from "../models/user.model.ts";
 import { Notification } from "../models/notification.model.ts";
 import { v2 as cloudinary } from "cloudinary";
+import { Activity } from "../models/activity.model.ts";
 
 export const getAllUsersController = async (req: Request, res: Response) => {
   try {
@@ -219,11 +220,12 @@ export const getUserActivityController = async (
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
-    const user = await User.findById(id)
-      .select("activities")
-      .populate("activities");
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.status(200).json(user.activities);
+    const activities = await Activity.find({ user: id }).populate({
+      path: "room",
+      select: "_id title image",
+    });
+
+    res.status(200).json(activities);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

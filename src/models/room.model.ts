@@ -59,8 +59,13 @@ const roomSchema = new Schema<RoomType>(
         "Business",
       ],
     },
+    admin: { type: Schema.Types.ObjectId, ref: "User", required: true },
     contributors: [
-      { type: Schema.Types.ObjectId, ref: "User", required: true },
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
     ],
     type: { type: String, default: "public", enum: ["public", "private"] },
     messages: [{ type: messageSchema, default: [] }],

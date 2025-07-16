@@ -32,6 +32,7 @@ export type Room = {
   description: string;
   image: string;
   topic: string;
+  admin: User;
   contributors: Array<User>;
   type: RoomType;
   messages: Array<Message>;

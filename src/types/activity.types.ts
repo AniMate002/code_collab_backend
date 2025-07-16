@@ -15,6 +15,7 @@ export const ActivityTitleType = {
   updateTaskStatus: "Updated task status",
   requestRoom: "Requested access to this room",
   requestRejected: "Request rejected",
+  followUser: "Followed",
 } as const;
 
 export type ActivityTitleType = keyof typeof ActivityTitleType;

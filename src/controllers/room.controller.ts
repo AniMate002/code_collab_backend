@@ -49,6 +49,7 @@ export const createRoomController = async (
       topic,
       type,
       contributors: [user._id],
+      admin: user._id,
     });
 
     const activity = new Activity({
@@ -97,15 +98,17 @@ export const getSingleRoomByIdController = async (
     const { id } = req.params;
     if (!id) return res.status(400).json({ message: "Invalid id" });
 
-    const room = await Room.findById(id).select([
-      "_id",
-      "title",
-      "description",
-      "image",
-      "topic",
-      "type",
-      "contributors",
-    ]);
+    const room = await Room.findById(id)
+      .select([
+        "_id",
+        "title",
+        "description",
+        "image",
+        "topic",
+        "type",
+        "contributors",
+      ])
+      .populate({ path: "admin", select: "name avatar _id" });
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     res.status(200).json(room);
@@ -305,7 +308,10 @@ export const getActivitiesByRoomIdController = async (
     const { id } = req.params;
     const room = await Room.findById(id);
     if (!room) return res.status(404).json({ message: "Room not found" });
-    const activities = await Activity.find({ room: id });
+    const activities = await Activity.find({ room: id }).populate({
+      path: "user",
+      select: "name avatar _id",
+    });
     return res.status(200).json(activities);
   } catch (error) {
     console.log(error);
@@ -369,7 +375,7 @@ export const getTasksByRoomIdController = async (
 
     const room = await Room.findById(id)
       .select("tasks")
-      .populate("tasks.assignedTo");
+      .populate({ path: "tasks.assignedTo", select: "name avatar _id" });
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     return res.status(200).json(room.tasks);

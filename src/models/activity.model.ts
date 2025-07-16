@@ -12,7 +12,7 @@ const activitySchema = new Schema<ActivityType>(
       enum: Object.values(ActivityTitleType),
     },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    room: { type: Schema.Types.ObjectId, ref: "Room", required: true },
+    room: { type: Schema.Types.ObjectId, ref: "Room" },
   },
   { timestamps: true },
 );
