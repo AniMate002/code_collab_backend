@@ -37,4 +37,12 @@ const userSchema = new Schema<UserType>(
   { timestamps: true },
 );
 
+userSchema.index({
+  name: "text",
+  email: "text",
+  about: "text",
+  specialization: "text",
+  skills: "text",
+});
+
 export const User = model("User", userSchema);

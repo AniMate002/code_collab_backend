@@ -20,6 +20,7 @@ import {
   getRecentRoomsController,
   uploadFileController,
   getFilesByRoomIdController,
+  getRoomsBuQueryController,
 } from "../controllers/room.controller.ts";
 
 const router = Router();
@@ -27,6 +28,7 @@ const router = Router();
 router.get("/", getAllRoomsController);
 router.get("/recent", getRecentRoomsController);
 router.get("/filter", getFilteredRoomsController);
+router.get("/search", getRoomsBuQueryController);
 
 router.get("/:id", getSingleRoomByIdController);
 

@@ -76,4 +76,6 @@ const roomSchema = new Schema<RoomType>(
   { timestamps: true },
 );
 
+roomSchema.index({ title: "text", description: "text", topic: "text" });
+
 export const Room = model("Room", roomSchema);

@@ -28,6 +28,27 @@ export const getSingleUserByIdController = async (
   }
 };
 
+export const searchUsersByQueryController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ message: "Missing query" });
+    const users = await User.find(
+      { $text: { $search: query.toString() } },
+      { score: { $meta: "textScore" } },
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .select("_id name avatar specialization");
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
 export const createUserController = async (req: Request, res: Response) => {
   try {
     const user = await User.create(req.body);

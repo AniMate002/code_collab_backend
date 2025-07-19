@@ -118,6 +118,26 @@ export const getSingleRoomByIdController = async (
   }
 };
 
+export const getRoomsBuQueryController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ message: "Missing query" });
+    const rooms = await Room.find(
+      { $text: { $search: query.toString() } },
+      { score: { $meta: "textScore" } },
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .select(["_id", "title", "description", "image", "topic", "type"]);
+    return res.status(200).json(rooms);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
 export const getFilteredRoomsController = async (
   req: Request,
   res: Response,

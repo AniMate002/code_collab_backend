@@ -12,6 +12,7 @@ import {
   getUserRoomsController,
   getUserActivityController,
   getFeaturedUsersController,
+  searchUsersByQueryController,
 } from "../controllers/user.controller.ts";
 import { checkAuth } from "../middleware/auth.middleware.ts";
 
@@ -19,6 +20,7 @@ const router = Router();
 // GET
 router.get("/", getAllUsersController);
 router.get("/filter", filterUsersController);
+router.get("/search", searchUsersByQueryController);
 router.get("/featured", getFeaturedUsersController);
 router.get("/:id", getSingleUserByIdController);
 router.get("/:id/followers", getUserFollowersController);
