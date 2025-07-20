@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { Room } from "../models/room.model.ts";
-import type { Link, Message, Task } from "../types/room.types.ts";
+import type { Link, Message, RoomType, Task } from "../types/room.types.ts";
 import { ActivityTitleType } from "../types/activity.types.ts";
 import { Activity } from "../models/activity.model.ts";
 import { User } from "../models/user.model.ts";
@@ -578,6 +578,50 @@ export const getFilesByRoomIdController = async (
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     return res.status(200).json(room.files);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
+export const editRoomController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { title, topic, description, type } = req.body;
+    let { image } = req.body;
+    if (!id) return res.status(400).json({ message: "Invalid id" });
+    const room = await Room.findById(id);
+    if (!room) return res.status(404).json({ message: "Room not found" });
+
+    if (type && type !== "public" && type !== "private")
+      return res
+        .status(400)
+        .json({ message: "Invalid type. Must be either public or private" });
+    else {
+    }
+
+    if (image && room.image !== image) {
+      const res = await cloudinary.uploader.upload(image, {
+        folder: "rooms",
+        width: 1200,
+        crop: "limit",
+        quality: "auto",
+        fetch_format: "auto",
+      });
+      image = res.secure_url;
+    }
+
+    room.title = title || room.title;
+    room.topic = topic || room.topic;
+    room.description = description || room.description;
+    room.type = (type as RoomType) || room.type;
+    room.image = image || room.image;
+
+    await room.save();
+    return res.status(200).json(room);
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

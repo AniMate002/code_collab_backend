@@ -21,6 +21,7 @@ import {
   uploadFileController,
   getFilesByRoomIdController,
   getRoomsBuQueryController,
+  editRoomController,
 } from "../controllers/room.controller.ts";
 
 const router = Router();
@@ -47,6 +48,9 @@ router.post("/:id/file", checkAuth, uploadFileController);
 router.post("/:id/link", checkAuth, createLinkController);
 router.post("/:id/task", checkAuth, createTaskController);
 router.post("/:id/join", checkAuth, joinLeaveRoomController);
+
+// put
+router.put("/:id/edit", checkAuth, editRoomController);
 
 // delete
 router.delete("/:id", checkAuth, deleteRoomController);
