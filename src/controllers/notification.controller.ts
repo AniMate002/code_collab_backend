@@ -5,7 +5,7 @@ import { Activity } from "../models/activity.model.ts";
 import { ActivityTitleType } from "../types/activity.types.ts";
 import { User } from "../models/user.model.ts";
 
-export const getAllNotificationsController = async (
+export const getAllAuthUserNotificationsController = async (
   req: Request,
   res: Response,
 ): Promise<any> => {
@@ -13,7 +13,9 @@ export const getAllNotificationsController = async (
     const user = req?.user;
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-    const notifications = await Notification.find({ to: user._id });
+    const notifications = await Notification.find({ to: user._id })
+      .populate("to from room", "_id name avatar image title")
+      .sort({ createdAt: -1 });
 
     await Notification.updateMany({ to: user._id }, { isRead: true });
     return res.status(200).json(notifications);
@@ -78,6 +80,9 @@ export const acceptInvitationController = async (
     const user = await User.findById(notification.to);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    if (room.contributors.includes(notification.to))
+      return res.status(400).json({ message: "User already in room" });
+
     const activity = new Activity({
       title: ActivityTitleType.joinRoom,
       user: notification.to,
@@ -88,7 +93,11 @@ export const acceptInvitationController = async (
       room.updateOne({ $push: { contributors: notification.to } }),
       user.updateOne({ $push: { rooms: room._id } }),
       activity.save(),
-      notification.updateOne({ isRead: true, isAccepted: true }),
+      notification.updateOne({
+        isRead: true,
+        isResolved: true,
+        type: "invitationAccepted",
+      }),
     ]);
     return res.status(200).json({ message: "Invitation accepted" });
   } catch (error) {
@@ -123,7 +132,11 @@ export const rejectInvitationController = async (
 
     await Promise.all([
       activity.save(),
-      notification.updateOne({ isRead: true, isAccepted: false }),
+      notification.updateOne({
+        isRead: true,
+        isResolved: true,
+        type: "invitationRejected",
+      }),
     ]);
     return res.status(200).json({ message: "Invitation rejected" });
   } catch (error) {
@@ -154,7 +167,14 @@ export const sendRequestController = async (
       room: room._id,
     });
 
-    await activity.save();
+    const notification = new Notification({
+      to: room.admin,
+      from: user._id,
+      room: room._id,
+      type: "request",
+    });
+
+    await Promise.all([notification.save(), activity.save()]);
 
     return res.status(201).json({ message: "Request sent" });
   } catch (error) {
@@ -170,22 +190,24 @@ export const acceptRequestController = async (
   try {
     const { id } = req.params;
 
-    const activity = await Activity.findById(id);
-    if (!activity)
-      return res.status(404).json({ message: "Activity not found" });
+    const notification = await Notification.findById(id);
+    if (!notification)
+      return res.status(404).json({ message: "Notification not found" });
 
-    const room = await Room.findById(activity.room);
+    const room = await Room.findById(notification.room);
     if (!room) return res.status(404).json({ message: "Room not found" });
 
-    const user = await User.findById(activity.user._id);
+    const user = await User.findById(notification.from._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const notification = new Notification({
+    notification.type = "requestAccepted";
+    notification.isResolved = true;
+
+    const newNotification = new Notification({
       to: user._id,
       from: req!.user!._id,
       room: room._id,
       type: "requestAccepted",
-      isAccepted: true,
     });
 
     const newActivity = new Activity({
@@ -198,6 +220,7 @@ export const acceptRequestController = async (
       room.updateOne({ $push: { contributors: user._id } }),
       user.updateOne({ $push: { rooms: room._id } }),
       notification.save(),
+      newNotification.save(),
       newActivity.save(),
     ]);
     return res.status(200).json({ message: "Request accepted" });
@@ -214,31 +237,27 @@ export const rejectRequestController = async (
   try {
     const { id } = req.params;
 
-    const activity = await Activity.findById(id);
-    if (!activity)
+    const notification = await Notification.findById(id);
+    if (!notification)
       return res.status(404).json({ message: "Activity not found" });
 
-    const room = await Room.findById(activity.room);
+    const room = await Room.findById(notification.room);
     if (!room) return res.status(404).json({ message: "Room not found" });
 
-    const user = await User.findById(activity.user._id);
+    const user = await User.findById(notification.from._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const newActivity = new Activity({
-      title: ActivityTitleType.requestRejected,
-      user: user._id,
-      room: room._id,
-    });
+    notification.type = "requestRejected";
+    notification.isResolved = true;
 
-    const notification = new Notification({
+    const newNotification = new Notification({
       to: user._id,
       from: req!.user!._id,
       room: room._id,
       type: "requestRejected",
-      isAccepted: false,
     });
 
-    await Promise.all([notification.save(), newActivity.save()]);
+    await Promise.all([notification.save(), newNotification.save()]);
     return res.status(200).json({ message: "Request rejected" });
   } catch (error) {
     console.log(error);

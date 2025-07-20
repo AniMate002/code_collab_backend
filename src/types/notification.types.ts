@@ -3,9 +3,12 @@ import type { Room } from "./room.types.ts";
 
 export type NotificationType =
   | "invitation"
+  | "request"
   | "requestAccepted"
   | "requestRejected"
-  | "follow";
+  | "follow"
+  | "invitationAccepted"
+  | "invitationRejected";
 
 export type Notification = {
   _id: string;
@@ -14,6 +17,6 @@ export type Notification = {
   to: User;
   room: Room;
   type: NotificationType;
-  isAccepted: boolean;
   isRead: boolean;
+  isResolved: boolean;
 };

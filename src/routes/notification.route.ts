@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { checkAuth } from "../middleware/auth.middleware.ts";
 import {
-  getAllNotificationsController,
+  getAllAuthUserNotificationsController,
   sendInvitationController,
   acceptInvitationController,
   sendRequestController,
@@ -13,7 +13,7 @@ import {
 const router = Router();
 
 // GET
-router.get("/", checkAuth, getAllNotificationsController);
+router.get("/", checkAuth, getAllAuthUserNotificationsController);
 
 // POST
 router.post("/sendInvitation", checkAuth, sendInvitationController);

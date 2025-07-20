@@ -162,7 +162,6 @@ export const followUnfollowUserController = async (
         from: authUser._id,
         room: null,
         type: "follow",
-        isAccepted: false,
         isRead: false,
       });
       await Promise.all([
