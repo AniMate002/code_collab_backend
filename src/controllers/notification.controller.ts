@@ -25,6 +25,24 @@ export const getAllAuthUserNotificationsController = async (
   }
 };
 
+export const getNewUnreadNotificationsController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const user = req?.user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    const notifications = await Notification.countDocuments({
+      to: user._id,
+      isRead: false,
+    });
+    return res.status(200).json(notifications);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json(error);
+  }
+};
+
 // INVITATION
 export const sendInvitationController = async (
   req: Request,
@@ -80,8 +98,14 @@ export const acceptInvitationController = async (
     const user = await User.findById(notification.to);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (room.contributors.includes(notification.to))
+    if (room.contributors.includes(notification.to)) {
+      await notification.updateOne({
+        isRead: true,
+        isResolved: true,
+        type: "invitationAccepted",
+      });
       return res.status(400).json({ message: "User already in room" });
+    }
 
     const activity = new Activity({
       title: ActivityTitleType.joinRoom,
@@ -194,11 +218,16 @@ export const acceptRequestController = async (
     if (!notification)
       return res.status(404).json({ message: "Notification not found" });
 
-    const room = await Room.findById(notification.room);
+    const room = await Room.findById(notification.room).populate(
+      "contributors",
+    );
     if (!room) return res.status(404).json({ message: "Room not found" });
 
     const user = await User.findById(notification.from._id);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (room.contributors.some((contributor) => contributor._id === user._id))
+      return res.status(400).json({ message: "User already in room" });
 
     notification.type = "requestAccepted";
     notification.isResolved = true;

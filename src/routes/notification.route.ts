@@ -8,12 +8,14 @@ import {
   acceptRequestController,
   rejectInvitationController,
   rejectRequestController,
+  getNewUnreadNotificationsController,
 } from "../controllers/notification.controller.ts";
 
 const router = Router();
 
 // GET
 router.get("/", checkAuth, getAllAuthUserNotificationsController);
+router.get("/unread", checkAuth, getNewUnreadNotificationsController);
 
 // POST
 router.post("/sendInvitation", checkAuth, sendInvitationController);
