@@ -49,7 +49,10 @@ export const searchUsersByQueryController = async (
   }
 };
 
-export const createUserController = async (req: Request, res: Response) => {
+export const createUserController = async (
+  req: Request,
+  res: Response,
+): Promise<any> => {
   try {
     const email = req.body?.email;
     if (!email) return res.status(400).json({ message: "Missing email" });
