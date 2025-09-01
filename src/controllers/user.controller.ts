@@ -51,6 +51,13 @@ export const searchUsersByQueryController = async (
 
 export const createUserController = async (req: Request, res: Response) => {
   try {
+    const email = req.body?.email;
+    if (!email) return res.status(400).json({ message: "Missing email" });
+    const userWithThisEmail = await User.findOne({ email });
+    if (userWithThisEmail)
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists" });
     const user = await User.create(req.body);
     res.status(201).json(user);
   } catch (error) {
